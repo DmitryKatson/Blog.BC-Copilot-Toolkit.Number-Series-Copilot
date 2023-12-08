@@ -124,6 +124,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
     var
         NoSeriesCopilotSetup: Record "GPT No. Series Copilot Setup";
     begin
+        NoSeriesCopilotSetup.Get();
         exit(NoSeriesCopilotSetup.GetSecretKeyFromIsolatedStorage())
     end;
 
