@@ -83,6 +83,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
     local procedure ListAllTablesWithNoSeries(var SystemPrompt: TextBuilder)
     var
         "Field": Record "Field";
+        i: Integer;
     begin
         Field.SetFilter(FieldName, 'No. Series');
         Field.SetFilter(ObsoleteState, '<>%1', Field.ObsoleteState::Removed);
@@ -91,6 +92,9 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         if Field.FindSet() then
             repeat
                 InsertObject(SystemPrompt, Field.TableNo);
+                if i > 15 then
+                    break;
+                i += 1;
             until Field.Next() = 0;
     end;
 
