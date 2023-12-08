@@ -23,7 +23,7 @@ page 50100 "GPT No. Series Proposal"
         {
             field(InputText; InputText)
             {
-                Caption = 'Request';
+                ShowCaption = false;
                 MultiLine = true;
                 ApplicationArea = All;
                 trigger OnValidate()
@@ -52,6 +52,15 @@ page 50100 "GPT No. Series Proposal"
             systemaction(Generate)
             {
                 Tooltip = 'Generate no. series';
+                trigger OnAction()
+                begin
+                    GenerateNoSeries();
+                end;
+            }
+            systemaction(Regenerate)
+            {
+                Caption = 'Regenerate';
+                Tooltip = 'Regenerate no. series';
                 trigger OnAction()
                 begin
                     GenerateNoSeries();

@@ -5,32 +5,36 @@ table 50103 "GPT No. Series Proposal"
 
     fields
     {
-        field(1; "Series Code"; Code[20])
+        field(1; "Generation Id"; Integer)
+        {
+            Caption = 'Generation Id';
+        }
+        field(2; "Series Code"; Code[20])
         {
             Caption = 'Series Code';
         }
-        field(2; "Line No."; Integer)
+        field(3; "Line No."; Integer)
         {
             Caption = 'Line No.';
         }
 
-        field(3; Description; Text[100])
+        field(4; Description; Text[100])
         {
             Caption = 'Description';
         }
-        field(4; "Starting No."; Code[20])
+        field(5; "Starting No."; Code[20])
         {
             Caption = 'Starting No.';
         }
-        field(5; "Ending No."; Code[20])
+        field(6; "Ending No."; Code[20])
         {
             Caption = 'Ending No.';
         }
-        field(6; "Warning No."; Code[20])
+        field(7; "Warning No."; Code[20])
         {
             Caption = 'Warning No.';
         }
-        field(7; "Increment-by No."; Integer)
+        field(8; "Increment-by No."; Integer)
         {
             Caption = 'Increment-by No.';
         }
@@ -38,7 +42,7 @@ table 50103 "GPT No. Series Proposal"
 
     keys
     {
-        key(PK; "Series Code", "Line No.")
+        key(PK; "Generation Id", "Series Code", "Line No.")
         {
             Clustered = true;
         }

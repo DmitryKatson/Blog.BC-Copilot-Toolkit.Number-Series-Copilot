@@ -48,12 +48,20 @@ codeunit 50102 "GPT No. Series Copilot Impl."
     var
         SystemPrompt: TextBuilder;
     begin
-        SystemPrompt.AppendLine('Generate No. Series for the next entities:');
+        SystemPrompt.AppendLine('You are `generateNumberSeries` API');
+        SystemPrompt.AppendLine();
+        SystemPrompt.AppendLine('Your task: Generate No. Series for the next entities:');
         SystemPrompt.AppendLine('"""');
         ListAllTablesWithNoSeries(SystemPrompt);
         SystemPrompt.AppendLine('"""');
-        SystemPrompt.AppendLine('Respond in the next JSON format:');
-        SystemPrompt.AppendLine('''''');
+        SystemPrompt.AppendLine();
+        SystemPrompt.AppendLine('User might add additional instructions on how to name series.');
+        SystemPrompt.AppendLine('Try to fullfil them.');
+        SystemPrompt.AppendLine();
+        SystemPrompt.AppendLine('IMPORTANT!');
+        SystemPrompt.AppendLine('Don''t add comments. ');
+        SystemPrompt.AppendLine('Always respond in the next JSON format:');
+        SystemPrompt.AppendLine('''''''');
         SystemPrompt.AppendLine('[');
         SystemPrompt.AppendLine('    {');
         SystemPrompt.AppendLine('        "seriesCode": "string (len 20)",');
@@ -65,9 +73,10 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         SystemPrompt.AppendLine('        "incrementByNo": "integer"');
         SystemPrompt.AppendLine('    }');
         SystemPrompt.AppendLine(']');
-        SystemPrompt.AppendLine('''''');
-        SystemPrompt.AppendLine('Follow user guidelines for No. Series generation, only if they are related to No. Series generation task.');
-        SystemPrompt.AppendLine('User guidelines:');
+        SystemPrompt.AppendLine('''''''');
+        SystemPrompt.AppendLine();
+        SystemPrompt.AppendLine('If you can''t answer or don''t know the answer, respond with: []');
+        SystemPrompt.AppendLine('Your answer in a JSON format: [');
         exit(SystemPrompt.ToText());
     end;
 
@@ -93,6 +102,8 @@ codeunit 50102 "GPT No. Series Copilot Impl."
             exit;
         if IsObsolete(TableNo) then
             exit;
+        if not IsNormal(TableNo) then
+            exit;
 
         SystemPrompt.AppendLine(AllObjWithCaption."Object Caption");
     end;
@@ -103,6 +114,14 @@ codeunit 50102 "GPT No. Series Copilot Impl."
     begin
         if TableMetadata.Get(TableID) then
             exit(TableMetadata.ObsoleteState = TableMetadata.ObsoleteState::Removed);
+    end;
+
+    local procedure IsNormal(TableID: Integer): Boolean
+    var
+        TableMetadata: Record "Table Metadata";
+    begin
+        if TableMetadata.Get(TableID) then
+            exit(TableMetadata.TableType = TableMetadata.TableType::Normal);
     end;
 
     local procedure GetEndpoint(): Text
@@ -135,7 +154,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
 
     local procedure MaxOutputTokens(): Integer
     begin
-        exit(500);
+        exit(2500);
     end;
 
     local procedure MaxModelTokens(): Integer
@@ -154,14 +173,23 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         for i := 0 to JSONManagement.GetCollectionCount() - 1 do begin
             JSONManagement.GetObjectFromCollectionByIndex(NoSeriesObj, i);
 
-            InsertNoSeriesGenerated(NoSeriesGenerated, NoSeriesObj);
+            InsertNoSeriesGenerated(NoSeriesGenerated, NoSeriesObj, GetLastGenerationId(NoSeriesGenerated));
         end;
     end;
 
-    local procedure InsertNoSeriesGenerated(var NoSeriesGenerated: Record "GPT No. Series Proposal"; var NoSeriesObj: Text)
+    local procedure GetLastGenerationId(var NoSeriesGenerated: Record "GPT No. Series Proposal"): Integer
+    begin
+        if NoSeriesGenerated.FindLast() then
+            exit(NoSeriesGenerated."Generation Id" + 1)
+        else
+            exit(1);
+    end;
+
+    local procedure InsertNoSeriesGenerated(var NoSeriesGenerated: Record "GPT No. Series Proposal"; var NoSeriesObj: Text; GenerationId: Integer)
     var
         JSONManagement: Codeunit "JSON Management";
         RecRef: RecordRef;
+        FieldRef: FieldRef;
     begin
         JSONManagement.InitializeObject(NoSeriesObj);
 
@@ -174,7 +202,16 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'endingNo', NoSeriesGenerated.FieldNo("Ending No."));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'warningNo', NoSeriesGenerated.FieldNo("Warning No."));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'incrementByNo', NoSeriesGenerated.FieldNo("Increment-by No."));
+        SetGenerationId(RecRef, GenerationId, NoSeriesGenerated.FieldNo("Generation Id"));
         RecRef.Insert(true);
+    end;
+
+    local procedure SetGenerationId(var RecRef: RecordRef; GenerationId: Integer; FieldNo: Integer)
+    var
+        FieldRef: FieldRef;
+    begin
+        FieldRef := RecRef.Field(FieldNo);
+        FieldRef.Value(GenerationId);
     end;
 
     procedure ApplyProposedNoSeries(var NoSeriesGenerated: Record "GPT No. Series Proposal")
