@@ -117,7 +117,7 @@ page 50100 "GPT No. Series Proposal"
         NoSeriesCopilotImpl: Codeunit "GPT No. Series Copilot Impl.";
         NoSeriesGenerated: Record "GPT No. Series Proposal";
     begin
-        CurrPage.ProposalDetails.Page.GetTempRecord(NoSeriesGenerated);
+        CurrPage.ProposalDetails.Page.GetTempRecord(Rec.ID, NoSeriesGenerated);
         NoSeriesCopilotImpl.ApplyProposedNoSeries(NoSeriesGenerated);
     end;
 }

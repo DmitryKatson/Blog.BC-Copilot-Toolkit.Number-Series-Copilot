@@ -55,10 +55,11 @@ page 50101 "GPT No. Series Proposal Sub"
             until NoSeriesGenerated.Next() = 0;
     end;
 
-    internal procedure GetTempRecord(var NoSeriesGenerated: Record "GPT No. Series Proposal")
+    internal procedure GetTempRecord(GenerationId: Integer; var NoSeriesGenerated: Record "GPT No. Series Proposal")
     begin
         NoSeriesGenerated.DeleteAll();
         Rec.Reset();
+        Rec.SetRange("Generation Id", GenerationId);
         if Rec.FindSet() then
             repeat
                 NoSeriesGenerated.Copy(Rec, false);
