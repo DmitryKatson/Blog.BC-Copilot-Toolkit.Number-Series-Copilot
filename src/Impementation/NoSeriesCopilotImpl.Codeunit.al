@@ -1,6 +1,6 @@
 codeunit 50102 "GPT No. Series Copilot Impl."
 {
-    procedure Generate(var NoSeriesGenerated: Record "GPT No. Series Proposal"; InputText: Text)
+    procedure Generate(var GenerationId: Record "Name/Value Buffer"; var NoSeriesGenerated: Record "GPT No. Series Proposal"; InputText: Text)
     var
         SystemPromptTxt: Text;
         CompletePromptTokenCount: Integer;
@@ -12,7 +12,10 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         CompletePromptTokenCount := TokenCountImpl.PreciseTokenCount(SystemPromptTxt) + TokenCountImpl.PreciseTokenCount(InputText);
         if CompletePromptTokenCount <= MaxInputTokens() then begin
             Completion := GenerateNoSeries(SystemPromptTxt, InputText);
-            CreateNoSeries(NoSeriesGenerated, Completion);
+            if CheckIfValidCompletion(Completion) then begin
+                IncreaseGenerationId(GenerationId);
+                CreateNoSeries(GenerationId, NoSeriesGenerated, Completion);
+            end;
         end;
     end;
 
@@ -59,7 +62,8 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         SystemPrompt.AppendLine('Try to fullfil them.');
         SystemPrompt.AppendLine();
         SystemPrompt.AppendLine('IMPORTANT!');
-        SystemPrompt.AppendLine('Don''t add comments. ');
+        SystemPrompt.AppendLine('Don''t add comments.');
+        SystemPrompt.AppendLine('Fill all fields.');
         SystemPrompt.AppendLine('Always respond in the next JSON format:');
         SystemPrompt.AppendLine('''''''');
         SystemPrompt.AppendLine('[');
@@ -108,6 +112,8 @@ codeunit 50102 "GPT No. Series Copilot Impl."
             exit;
         if not IsNormal(TableNo) then
             exit;
+        if IsEntryTable(TableNo) then
+            exit;
 
         SystemPrompt.AppendLine(AllObjWithCaption."Object Caption");
     end;
@@ -126,6 +132,14 @@ codeunit 50102 "GPT No. Series Copilot Impl."
     begin
         if TableMetadata.Get(TableID) then
             exit(TableMetadata.TableType = TableMetadata.TableType::Normal);
+    end;
+
+    local procedure IsEntryTable(TableID: Integer): Boolean
+    var
+        TableMetadata: Record "Table Metadata";
+    begin
+        if TableMetadata.Get(TableID) then
+            exit(TableMetadata.Name.Contains('Entry'));
     end;
 
     local procedure GetEndpoint(): Text
@@ -166,7 +180,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         exit(4096); //GPT 3.5 Turbo
     end;
 
-    local procedure CreateNoSeries(var NoSeriesGenerated: Record "GPT No. Series Proposal"; Completion: Text)
+    local procedure CreateNoSeries(var GenerationId: Record "Name/Value Buffer"; var NoSeriesGenerated: Record "GPT No. Series Proposal"; Completion: Text)
     var
         JSONManagement: Codeunit "JSON Management";
         NoSeriesObj: Text;
@@ -177,16 +191,22 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         for i := 0 to JSONManagement.GetCollectionCount() - 1 do begin
             JSONManagement.GetObjectFromCollectionByIndex(NoSeriesObj, i);
 
-            InsertNoSeriesGenerated(NoSeriesGenerated, NoSeriesObj, GetLastGenerationId(NoSeriesGenerated));
+            InsertNoSeriesGenerated(NoSeriesGenerated, NoSeriesObj, GenerationId.ID);
         end;
     end;
 
-    local procedure GetLastGenerationId(var NoSeriesGenerated: Record "GPT No. Series Proposal"): Integer
+    [TryFunction]
+    local procedure CheckIfValidCompletion(var Completion: Text)
+    var
+        JsonArray: JsonArray;
     begin
-        if NoSeriesGenerated.FindLast() then
-            exit(NoSeriesGenerated."Generation Id" + 1)
-        else
-            exit(1);
+        JsonArray.ReadFrom(Completion);
+    end;
+
+    local procedure IncreaseGenerationId(var GenerationId: Record "Name/Value Buffer")
+    begin
+        GenerationId.ID += 1;
+        GenerationId.Insert(true);
     end;
 
     local procedure InsertNoSeriesGenerated(var NoSeriesGenerated: Record "GPT No. Series Proposal"; var NoSeriesObj: Text; GenerationId: Integer)
@@ -199,6 +219,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
 
         RecRef.GetTable(NoSeriesGenerated);
         RecRef.Init();
+        SetGenerationId(RecRef, GenerationId, NoSeriesGenerated.FieldNo("Generation Id"));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'seriesCode', NoSeriesGenerated.FieldNo("Series Code"));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'lineNo', NoSeriesGenerated.FieldNo("Line No."));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'description', NoSeriesGenerated.FieldNo("Description"));
@@ -206,7 +227,6 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'endingNo', NoSeriesGenerated.FieldNo("Ending No."));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'warningNo', NoSeriesGenerated.FieldNo("Warning No."));
         JSONManagement.GetValueAndSetToRecFieldNo(RecRef, 'incrementByNo', NoSeriesGenerated.FieldNo("Increment-by No."));
-        SetGenerationId(RecRef, GenerationId, NoSeriesGenerated.FieldNo("Generation Id"));
         RecRef.Insert(true);
     end;
 

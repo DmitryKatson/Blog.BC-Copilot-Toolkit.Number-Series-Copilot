@@ -45,7 +45,7 @@ page 50101 "GPT No. Series Proposal Sub"
         }
     }
 
-    internal procedure Load(var NoSeriesGenerated: Record "GPT No. Series Proposal"): Integer
+    internal procedure Load(var NoSeriesGenerated: Record "GPT No. Series Proposal")
     begin
         NoSeriesGenerated.Reset();
         if NoSeriesGenerated.FindSet() then
@@ -53,9 +53,6 @@ page 50101 "GPT No. Series Proposal Sub"
                 Rec := NoSeriesGenerated;
                 Rec.Insert();
             until NoSeriesGenerated.Next() = 0;
-
-        CurrPage.Update();
-        exit(NoSeriesGenerated.Count());
     end;
 
     internal procedure GetTempRecord(var NoSeriesGenerated: Record "GPT No. Series Proposal")

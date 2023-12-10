@@ -1,14 +1,14 @@
 page 50100 "GPT No. Series Proposal"
 {
     Caption = 'Generate No. Series with Copilot';
-    DataCaptionExpression = InputText;
+    DataCaptionExpression = GenerationIdInputText;
     PageType = PromptDialog;
     IsPreview = true;
     Extensible = false;
     // PromptMode = Content;
     ApplicationArea = All;
     Editable = true;
-    SourceTable = "GPT No. Series Proposal";
+    SourceTable = "Name/Value Buffer";
     SourceTableTemporary = true;
     InherentPermissions = X;
     InherentEntitlements = X;
@@ -42,6 +42,7 @@ page 50100 "GPT No. Series Proposal"
                 ApplicationArea = All;
                 Editable = true;
                 Enabled = true;
+                SubPageLink = "Generation Id" = field(ID);
             }
         }
     }
@@ -88,7 +89,12 @@ page 50100 "GPT No. Series Proposal"
 
     var
         InputText: Text;
-        GeneratedText: Text;
+        GenerationIdInputText: Text;
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        GenerationIdInputText := Rec."Value Long";
+    end;
 
     trigger OnQueryClosePage(CloseAction: Action): Boolean
     var
@@ -102,7 +108,7 @@ page 50100 "GPT No. Series Proposal"
         NoSeriesCopilotImpl: Codeunit "GPT No. Series Copilot Impl.";
         NoSeriesGenerated: Record "GPT No. Series Proposal";
     begin
-        NoSeriesCopilotImpl.Generate(NoSeriesGenerated, InputText);
+        NoSeriesCopilotImpl.Generate(Rec, NoSeriesGenerated, InputText);
         CurrPage.ProposalDetails.Page.Load(NoSeriesGenerated);
     end;
 
