@@ -13,7 +13,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         if CompletePromptTokenCount <= MaxInputTokens() then begin
             Completion := GenerateNoSeries(SystemPromptTxt, InputText);
             if CheckIfValidCompletion(Completion) then begin
-                IncreaseGenerationId(GenerationId);
+                SaveGenerationHistory(GenerationId, InputText);
                 CreateNoSeries(GenerationId, NoSeriesGenerated, Completion);
             end;
         end;
@@ -203,9 +203,10 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         JsonArray.ReadFrom(Completion);
     end;
 
-    local procedure IncreaseGenerationId(var GenerationId: Record "Name/Value Buffer")
+    local procedure SaveGenerationHistory(var GenerationId: Record "Name/Value Buffer"; InputText: Text)
     begin
         GenerationId.ID += 1;
+        GenerationId."Value Long" := InputText;
         GenerationId.Insert(true);
     end;
 
