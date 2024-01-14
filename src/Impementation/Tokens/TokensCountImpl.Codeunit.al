@@ -20,14 +20,9 @@ codeunit 50101 "GPT Tokens Count Impl."
 
     procedure ApproximateTokenCount(Input: Text): Decimal
     var
-        AverageWordsPerToken: Decimal;
-        TokenCount: Integer;
-        WordsInInput: Integer;
+        AzureOpenAI: Codeunit "Azure OpenAI";
     begin
-        AverageWordsPerToken := 0.6; // Based on OpenAI estimate
-        WordsInInput := Input.Split(' ', ',', '.', '!', '?', ';', ':', '/n').Count;
-        TokenCount := Round(WordsInInput / AverageWordsPerToken, 1);
-        exit(TokenCount);
+        exit(AzureOpenAI.ApproximateTokenCount(Input));
     end;
 
     procedure PreciseTokenCount(Input: Text): Integer

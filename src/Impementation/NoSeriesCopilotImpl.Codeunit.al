@@ -10,6 +10,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         SystemPromptTxt := GetSystemPrompt();
 
         CompletePromptTokenCount := TokenCountImpl.PreciseTokenCount(SystemPromptTxt) + TokenCountImpl.PreciseTokenCount(InputText);
+        // CompletePromptTokenCount := TokenCountImpl.ApproximateTokenCount(SystemPromptTxt) + TokenCountImpl.ApproximateTokenCount(InputText);
         if CompletePromptTokenCount <= MaxInputTokens() then begin
             Completion := GenerateNoSeries(SystemPromptTxt, InputText);
             if CheckIfValidCompletion(Completion) then begin
