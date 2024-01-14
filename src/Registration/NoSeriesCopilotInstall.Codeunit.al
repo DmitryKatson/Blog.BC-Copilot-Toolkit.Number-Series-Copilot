@@ -11,7 +11,7 @@ codeunit 50100 "GPT No. Series Copilot Install"
     var
         CopilotCapability: Codeunit "Copilot Capability";
         EnvironmentInformation: Codeunit "Environment Information";
-        LearnMoreUrlTxt: Label 'https://katson.com/blogs', Locked = true;
+        LearnMoreUrlTxt: Label 'https://katson.com/blog', Locked = true;
     begin
         if EnvironmentInformation.IsSaaS() then
             if not CopilotCapability.IsCapabilityRegistered(Enum::"Copilot Capability"::"GPT No. Series Copilot") then
