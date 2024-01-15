@@ -25,6 +25,13 @@ codeunit 50101 "GPT Tokens Count Impl."
         exit(AzureOpenAI.ApproximateTokenCount(Input));
     end;
 
+    // procedure GPT35TokenCount(Input: Text): Integer
+    // var
+    //     AOAIToken: Codeunit "AOAI Token"
+    // begin
+    //     exit(AOAIToken.GetGPT35TokenCount(Input));
+    // end;
+
     procedure PreciseTokenCount(Input: Text): Integer
     var
         RestClient: Codeunit "Rest Client";
