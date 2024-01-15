@@ -1,29 +1,29 @@
 codeunit 50101 "GPT Tokens Count Impl."
 {
-    trigger OnRun()
-    var
-        Text: Text;
-        Tokens: List of [Text];
-        TokensList: Text;
-        i: Integer;
-    begin
-        Text := 'Helllllo AL developers! Welcome to the AI world!!!';
-        Message('%1\\Approximate token count: %2\Precise token count: %3', Text, ApproximateTokenCount(Text), PreciseTokenCount(Text));
+    // trigger OnRun()
+    // var
+    //     Text: Text;
+    //     Tokens: List of [Text];
+    //     TokensList: Text;
+    //     i: Integer;
+    // begin
+    //     Text := 'Helllllo AL developers! Welcome to the AI world!!!';
+    //     Message('%1\\Approximate token count: %2\Precise token count: %3', Text, ApproximateTokenCount(Text), PreciseTokenCount(Text));
 
-        Tokens := ListTokens(Text);
-        for i := 1 to Tokens.Count do begin
-            TokensList += Tokens.Get(i) + ', ';
-        end;
+    //     Tokens := ListTokens(Text);
+    //     for i := 1 to Tokens.Count do begin
+    //         TokensList += Tokens.Get(i) + ', ';
+    //     end;
 
-        Message('%1\\Tokens:\%2', Text, TokensList);
-    end;
+    //     Message('%1\\Tokens:\%2', Text, TokensList);
+    // end;
 
-    procedure ApproximateTokenCount(Input: Text): Decimal
-    var
-        AzureOpenAI: Codeunit "Azure OpenAI";
-    begin
-        exit(AzureOpenAI.ApproximateTokenCount(Input));
-    end;
+    // procedure ApproximateTokenCount(Input: Text): Decimal
+    // var
+    //     AzureOpenAI: Codeunit "Azure OpenAI";
+    // begin
+    //     exit(AzureOpenAI.ApproximateTokenCount(Input));
+    // end;
 
     // procedure GPT35TokenCount(Input: Text): Integer
     // var
