@@ -6,7 +6,7 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         CompletePromptTokenCount: Integer;
         Completion: Text;
         TokenCountImpl: Codeunit "GPT Tokens Count Impl.";
-    // TokenCountImpl: Codeunit "AOAI Token"
+    // TokenCountImpl: Codeunit "AOAI Token";
     begin
         SystemPromptTxt := GetSystemPrompt();
 
