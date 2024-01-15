@@ -6,11 +6,12 @@ codeunit 50102 "GPT No. Series Copilot Impl."
         CompletePromptTokenCount: Integer;
         Completion: Text;
         TokenCountImpl: Codeunit "GPT Tokens Count Impl.";
+    // TokenCountImpl: Codeunit "AOAI Token"
     begin
         SystemPromptTxt := GetSystemPrompt();
 
         CompletePromptTokenCount := TokenCountImpl.PreciseTokenCount(SystemPromptTxt) + TokenCountImpl.PreciseTokenCount(InputText);
-        // CompletePromptTokenCount := TokenCountImpl.ApproximateTokenCount(SystemPromptTxt) + TokenCountImpl.ApproximateTokenCount(InputText);
+        // CompletePromptTokenCount := TokenCountImpl.GetGPT35TokenCount(SystemPromptTxt) + TokenCountImpl.GetGPT35TokenCount(InputText); // from v24
         if CompletePromptTokenCount <= MaxInputTokens() then begin
             Completion := GenerateNoSeries(SystemPromptTxt, InputText);
             if CheckIfValidCompletion(Completion) then begin
